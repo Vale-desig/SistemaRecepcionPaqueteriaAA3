@@ -1,13 +1,17 @@
 package com.sistemarecepcion;
 
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
 /**
- * Hello world!
+ * Clase principal del backend del Sistema de Recepción de Paquetería.
  *
+ * Esta clase inicia la aplicación Spring Boot.
  */
-public class App 
-{
-    public static void main( String[] args )
-    {
-        System.out.println( "Hello World!" );
+@SpringBootApplication
+public class App {
+
+    public static void main(String[] args) {
+        SpringApplication.run(App.class, args);
     }
 }

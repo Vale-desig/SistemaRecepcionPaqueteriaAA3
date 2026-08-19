@@ -44,7 +44,7 @@ public class UsuarioService {
     }
 
     /**
-     * Guarda un nuevo usuario o actualiza uno  existente.
+     * Guarda un nuevo usuario o actualiza uno existente.
      * 
      * @param usuario usuario que se desea guardar.
      * @return usuario guardado.

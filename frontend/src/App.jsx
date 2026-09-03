@@ -205,6 +205,9 @@ function App() {
                 name="usuaNombre"
                 value={usuario.usuaNombre}
                 onChange={manejarCambio}
+                pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]+"
+                title="El nombre solo debe tener letras y espacios."
+                maxLength="45"
                 required
               />
             </label>
@@ -216,6 +219,10 @@ function App() {
                 name="usuaCedula"
                 value={usuario.usuaCedula}
                 onChange={manejarCambio}
+                inputMode="numeric"
+                pattern="[0-9]+"
+                title="La cédula solo debe contener números."
+                maxLength="45"
                 required
               />
             </label>
@@ -227,6 +234,10 @@ function App() {
                 name="usuaTelefono"
                 value={usuario.usuaTelefono}
                 onChange={manejarCambio}
+                inputMode="numeric"
+                pattern="[0-9]+"
+                title="El teléfono solo debe contener números."
+                maxLength="20"
                 required
               />
             </label>
@@ -238,6 +249,7 @@ function App() {
                 name="usuaCorreo"
                 value={usuario.usuaCorreo}
                 onChange={manejarCambio}
+                maxLength="100"
                 required
               />
             </label>
@@ -249,6 +261,9 @@ function App() {
                 name="usuaApartamento"
                 value={usuario.usuaApartamento}
                 onChange={manejarCambio}
+                pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü0-9 \-]+"
+                title="El apartamento solo debe contener letras, números, espacios y guiones."
+                maxLength="45"
                 required
               />
             </label>

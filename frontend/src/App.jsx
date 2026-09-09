@@ -1,6 +1,14 @@
 import { useCallback, useState } from "react"
 import "./App.css"
 
+import FormularioUsuario from "./components/FormularioUsuario"
+import TablaUsuarios from "./components/TablaUsuarios"
+import ModalConfirmacion from "./components/ModalConfirmacion"
+import Navbar from "./components/Navbar"
+
+import Inicio from "./pages/Inicio"
+import Paquetes from "./pages/Paquetes"
+
 const API_URL = "http://localhost:8080/api/usuarios"
 
 function App() {
@@ -166,30 +174,36 @@ function App() {
     setVista("usuarios")
   }
 
+  // Cambia a la página principal.
+  const mostrarInicio = () => {
+    setMensaje("")
+    setVista("inicio")
+  }
+
+  // Cambia a la página de paquetes.
+  const mostrarPaquetes = () => {
+    setMensaje("")
+    setVista("paquetes")
+  }
+
   return (
     <main className="contenedor">
       <header className="encabezado">
         <h1>Sistema de Recepción de Paquetería</h1>
         <p>Gestión de usuarios</p>
 
-        <nav className="navegacion">
-          <button
-            type="button"
-            className={vista === "registrar" ? "activo" : ""}
-            onClick={mostrarRegistro}
-          >
-            Registrar usuario
-          </button>
-
-          <button
-            type="button"
-            className={vista === "usuarios" ? "activo" : ""}
-            onClick={mostrarUsuarios}
-          >
-            Usuarios registrados
-          </button>
-        </nav>
+        <Navbar
+        vista={vista}
+        onInicio={mostrarInicio}
+        onRegistrar={mostrarRegistro}
+        onMostrarUsuarios={mostrarUsuarios}
+        onPaquetes={mostrarPaquetes}
+        />
       </header>
+
+      {vista === "inicio" && <Inicio />}
+
+      {vista === "paquetes" && <Paquetes />}
 
       {vista === "registrar" && (
         <section className="tarjeta">
@@ -197,207 +211,37 @@ function App() {
             {usuarioEditando ? "Editar usuario" : "Registrar usuario"}
           </h2>
 
-          <form onSubmit={guardarUsuario} className="formulario">
-            <label>
-              Nombre
-              <input
-                type="text"
-                name="usuaNombre"
-                value={usuario.usuaNombre}
-                onChange={manejarCambio}
-                pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü ]+"
-                title="El nombre solo debe tener letras y espacios."
-                maxLength="45"
-                required
-              />
-            </label>
-
-            <label>
-              Cédula
-              <input
-                type="text"
-                name="usuaCedula"
-                value={usuario.usuaCedula}
-                onChange={manejarCambio}
-                inputMode="numeric"
-                pattern="[0-9]+"
-                title="La cédula solo debe contener números."
-                maxLength="45"
-                required
-              />
-            </label>
-
-            <label>
-              Teléfono
-              <input
-                type="text"
-                name="usuaTelefono"
-                value={usuario.usuaTelefono}
-                onChange={manejarCambio}
-                inputMode="numeric"
-                pattern="[0-9]+"
-                title="El teléfono solo debe contener números."
-                maxLength="20"
-                required
-              />
-            </label>
-
-            <label>
-              Correo
-              <input
-                type="email"
-                name="usuaCorreo"
-                value={usuario.usuaCorreo}
-                onChange={manejarCambio}
-                maxLength="100"
-                required
-              />
-            </label>
-
-            <label>
-              Apartamento
-              <input
-                type="text"
-                name="usuaApartamento"
-                value={usuario.usuaApartamento}
-                onChange={manejarCambio}
-                pattern="[A-Za-zÁÉÍÓÚáéíóúÑñÜü0-9 \-]+"
-                title="El apartamento solo debe contener letras, números, espacios y guiones."
-                maxLength="45"
-                required
-              />
-            </label>
-
-            <label>
-              Rol
-              <select
-                name="idRol"
-                value={usuario.idRol}
-                onChange={manejarCambio}
-                required
-              >
-                <option value="">Seleccione un rol</option>
-                <option value="1">Administrador</option>
-                <option value="2">Portero</option>
-                <option value="3">Residente</option>
-              </select>
-            </label>
-
-            <div className="botones">
-              <button type="submit">
-                {usuarioEditando
-                  ? "Actualizar usuario"
-                  : "Guardar usuario"}
-              </button>
-
-              {usuarioEditando && (
-                <button
-                  type="button"
-                  onClick={limpiarFormulario}
-                >
-                  Cancelar
-                </button>
-              )}
-            </div>
-          </form>
+          <FormularioUsuario
+          usuario={usuario}
+          usuarioEditando={usuarioEditando}
+          onCambio={manejarCambio}
+          onGuardar={guardarUsuario}
+          onCancelar={limpiarFormulario}
+          />
 
           {mensaje && <p className="mensaje">{mensaje}</p>}
         </section>
       )}
-
+      
       {vista === "usuarios" && (
         <section className="tarjeta">
           <h2>Usuarios registrados</h2>
 
-          {usuarios.length === 0 ? (
-            <p>No hay usuarios registrados.</p>
-          ) : (
-            <div className="tabla-contenedor">
-              <table>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Nombre</th>
-                    <th>Cédula</th>
-                    <th>Teléfono</th>
-                    <th>Correo</th>
-                    <th>Apartamento</th>
-                    <th>Rol</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-
-                <tbody>
-                  {usuarios.map((usuarioItem) => (
-                    <tr key={usuarioItem.idUsuario}>
-                      <td>{usuarioItem.idUsuario}</td>
-                      <td>{usuarioItem.usuaNombre}</td>
-                      <td>{usuarioItem.usuaCedula}</td>
-                      <td>{usuarioItem.usuaTelefono}</td>
-                      <td>{usuarioItem.usuaCorreo}</td>
-                      <td>{usuarioItem.usuaApartamento}</td>
-                      <td>{usuarioItem.idRol}</td>
-
-                      <td>
-                        <div className="acciones">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              editarUsuario(usuarioItem)
-                            }
-                          >
-                            Editar
-                          </button>
-
-                          <button
-                          type="button"
-                          onClick={() => eliminarUsuario(usuarioItem)}
-                          >
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <TablaUsuarios
+          usuarios={usuarios}
+          onEditar={editarUsuario}
+          onEliminar={eliminarUsuario}
+          />
 
           {mensaje && <p className="mensaje">{mensaje}</p>}
         </section>
       )}
 
-      {usuarioAEliminar && (
-        <div className="modal-fondo">
-          <div className="modal-confirmacion">
-            <h2>¿Eliminar usuario?</h2>
-
-            <p>
-              ¿Está seguro de que desea eliminar a{" "}
-              <strong>{usuarioAEliminar.usuaNombre}</strong>?
-            </p>
-
-            <div className="modal-botones">
-              <button
-              type="button"
-              className="boton-cancelar"
-              onClick={() => setUsuarioAEliminar(null)}
-              >
-                Cancelar
-              </button>
-
-              <button
-              type="button"
-              className="boton-eliminar"
-              onClick={confirmarEliminacion}
-              >
-                Sí, eliminar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ModalConfirmacion
+      usuario={usuarioAEliminar}
+      onConfirmar={confirmarEliminacion}
+      onCancelar={() => setUsuarioAEliminar(null)}
+      />
     </main>
   )
 }

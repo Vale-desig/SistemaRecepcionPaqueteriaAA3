@@ -1,3 +1,4 @@
+
 import { useCallback, useState } from "react"
 import "./App.css"
 
@@ -8,10 +9,18 @@ import Navbar from "./components/Navbar"
 
 import Inicio from "./pages/Inicio"
 import Paquetes from "./pages/Paquetes"
+import Entregas from "./pages/Entregas"
+import Login from "./pages/Login"
+import Incidentes from "./pages/Incidentes"
 
 const API_URL = "http://localhost:8080/api/usuarios"
 
 function App() {
+  const [sesion, setSesion] = useState(() => {
+    const datosGuardados = sessionStorage.getItem("sesion")
+    return datosGuardados ? JSON.parse(datosGuardados) : null
+  })
+
   const [usuarios, setUsuarios] = useState([])
   const [usuario, setUsuario] = useState({
     usuaNombre: "",
@@ -19,18 +28,25 @@ function App() {
     usuaTelefono: "",
     usuaCorreo: "",
     usuaApartamento: "",
-    idRol: ""
+    idRol: "",
+    usuaContrasena: ""
   })
 
   const [usuarioEditando, setUsuarioEditando] = useState(null)
   const [mensaje, setMensaje] = useState("")
-  const [vista, setVista] = useState("registrar")
+  const [vista, setVista] = useState("inicio")
   const [usuarioAEliminar, setUsuarioAEliminar] = useState(null)
 
-  // Consulta todos los usuarios registrados en el backend.
+  const obtenerHeaders = () => ({
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${sessionStorage.getItem("token")}`
+  })
+
   const cargarUsuarios = useCallback(async () => {
     try {
-      const respuesta = await fetch(API_URL)
+      const respuesta = await fetch(API_URL, {
+        headers: obtenerHeaders()
+      })
 
       if (!respuesta.ok) {
         throw new Error("No se pudieron obtener los usuarios.")
@@ -44,17 +60,23 @@ function App() {
     }
   }, [])
 
-  // Actualiza los valores del formulario.
   const manejarCambio = (evento) => {
     const { name, value } = evento.target
 
-    setUsuario({
-      ...usuario,
-      [name]: value
+    setUsuario((usuarioAnterior) => {
+      const usuarioActualizado = {
+        ...usuarioAnterior,
+        [name]: value
+      }
+
+      if (name === "idRol" && Number(value) === 3) {
+        usuarioActualizado.usuaContrasena = ""
+      }
+
+      return usuarioActualizado
     })
   }
 
-  // Registra un nuevo usuario o actualiza uno existente.
   const guardarUsuario = async (evento) => {
     evento.preventDefault()
 
@@ -72,9 +94,7 @@ function App() {
 
       const respuesta = await fetch(url, {
         method: metodo,
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: obtenerHeaders(),
         body: JSON.stringify(datosUsuario)
       })
 
@@ -96,7 +116,6 @@ function App() {
     }
   }
 
-  // Carga los datos del usuario seleccionado en el formulario.
   const editarUsuario = (usuarioSeleccionado) => {
     setUsuario({
       usuaNombre: usuarioSeleccionado.usuaNombre || "",
@@ -104,7 +123,8 @@ function App() {
       usuaTelefono: usuarioSeleccionado.usuaTelefono || "",
       usuaCorreo: usuarioSeleccionado.usuaCorreo || "",
       usuaApartamento: usuarioSeleccionado.usuaApartamento || "",
-      idRol: usuarioSeleccionado.idRol || ""
+      idRol: usuarioSeleccionado.idRol ?? "",
+      usuaContrasena: ""
     })
 
     setUsuarioEditando(usuarioSeleccionado.idUsuario)
@@ -112,23 +132,19 @@ function App() {
     setVista("registrar")
   }
 
-  // Abre la ventana de confirmación para eliminar un usuario.
   const eliminarUsuario = (usuarioSeleccionado) => {
     setUsuarioAEliminar(usuarioSeleccionado)
   }
 
-
-  // Elimina el usuario después de confirmar.
   const confirmarEliminacion = async () => {
-    if (!usuarioAEliminar) {
-      return
-    }
+    if (!usuarioAEliminar) return
 
     try {
       const respuesta = await fetch(
         `${API_URL}/${usuarioAEliminar.idUsuario}`,
         {
-          method: "DELETE"
+          method: "DELETE",
+          headers: obtenerHeaders()
         }
       )
 
@@ -142,11 +158,10 @@ function App() {
       await cargarUsuarios()
     } catch (error) {
       console.error("Error al eliminar usuarios:", error)
-      setMensaje("NO fue posible eliminar el usuario.")
+      setMensaje("No fue posible eliminar el usuario.")
     }
   }
 
-  // Limpia el formulario y cancela el modo de edición.
   const limpiarFormulario = () => {
     setUsuario({
       usuaNombre: "",
@@ -154,94 +169,147 @@ function App() {
       usuaTelefono: "",
       usuaCorreo: "",
       usuaApartamento: "",
-      idRol: ""
+      idRol: "",
+      usuaContrasena: ""
     })
 
     setUsuarioEditando(null)
   }
 
-  // Cambia a la pantalla de registro.
   const mostrarRegistro = () => {
     limpiarFormulario()
     setMensaje("")
     setVista("registrar")
   }
 
-  // Cambia a la pantalla de usuarios registrados.
   const mostrarUsuarios = async () => {
     setMensaje("")
     await cargarUsuarios()
     setVista("usuarios")
   }
 
-  // Cambia a la página principal.
   const mostrarInicio = () => {
     setMensaje("")
     setVista("inicio")
   }
 
-  // Cambia a la página de paquetes.
   const mostrarPaquetes = () => {
     setMensaje("")
     setVista("paquetes")
   }
 
+  const mostrarEntregas = () => {
+    setMensaje("")
+    setVista("entregas")
+  }
+
+  const mostrarIncidentes = () => setVista("incidentes")
+
+  const iniciarSesion = (datos) => {
+    sessionStorage.setItem("sesion", JSON.stringify(datos))
+    setSesion(datos)
+    setVista("inicio")
+  }
+
+  const cerrarSesion = () => {
+    sessionStorage.removeItem("token")
+    sessionStorage.removeItem("sesion")
+    setSesion(null)
+    setVista("inicio")
+    limpiarFormulario()
+    setUsuarios([])
+    setMensaje("")
+  }
+
+  if (!sesion) {
+    return (
+      <main className="contenedor">
+        <header className="encabezado">
+          <h1>Sistema de Recepción de Paquetería</h1>
+        </header>
+
+        <Login onLogin={iniciarSesion} />
+      </main>
+    )
+  }
+
+  const rol = Number(sesion.idRol)
+
   return (
     <main className="contenedor">
       <header className="encabezado">
         <h1>Sistema de Recepción de Paquetería</h1>
-        <p>Gestión de usuarios</p>
+        <p>Bienvenido, {sesion.nombre}</p>
 
         <Navbar
-        vista={vista}
-        onInicio={mostrarInicio}
-        onRegistrar={mostrarRegistro}
-        onMostrarUsuarios={mostrarUsuarios}
-        onPaquetes={mostrarPaquetes}
+          vista={vista}
+          rol={rol}
+          onInicio={mostrarInicio}
+          onRegistrar={mostrarRegistro}
+          onMostrarUsuarios={mostrarUsuarios}
+          onPaquetes={mostrarPaquetes}
+          onEntregas={mostrarEntregas}
+          onIncidentes={mostrarIncidentes}
         />
+
+        <button type="button" onClick={cerrarSesion}>
+          Cerrar sesión
+        </button>
       </header>
 
       {vista === "inicio" && <Inicio />}
 
-      {vista === "paquetes" && <Paquetes />}
+      {vista === "paquetes" && (
+        <Paquetes sesion={sesion} />
+      )}
 
-      {vista === "registrar" && (
+      {vista === "incidentes" && (
+        <Incidentes sesion={sesion} />
+      )}
+
+      {(rol === 1 || rol === 2) && vista === "entregas" && (
+        <Entregas />
+      )}
+
+      {rol === 1 && vista === "registrar" && (
         <section className="tarjeta">
           <h2>
             {usuarioEditando ? "Editar usuario" : "Registrar usuario"}
           </h2>
 
           <FormularioUsuario
-          usuario={usuario}
-          usuarioEditando={usuarioEditando}
-          onCambio={manejarCambio}
-          onGuardar={guardarUsuario}
-          onCancelar={limpiarFormulario}
+            usuario={usuario}
+            usuarioEditando={usuarioEditando}
+            onCambio={manejarCambio}
+            onGuardar={guardarUsuario}
+            onCancelar={limpiarFormulario}
           />
 
           {mensaje && <p className="mensaje">{mensaje}</p>}
         </section>
       )}
-      
-      {vista === "usuarios" && (
+
+      {rol === 1 && vista === "usuarios" && (
         <section className="tarjeta">
           <h2>Usuarios registrados</h2>
 
           <TablaUsuarios
-          usuarios={usuarios}
-          onEditar={editarUsuario}
-          onEliminar={eliminarUsuario}
+            usuarios={usuarios}
+            onEditar={editarUsuario}
+            onEliminar={eliminarUsuario}
           />
 
           {mensaje && <p className="mensaje">{mensaje}</p>}
         </section>
       )}
 
-      <ModalConfirmacion
-      usuario={usuarioAEliminar}
-      onConfirmar={confirmarEliminacion}
-      onCancelar={() => setUsuarioAEliminar(null)}
-      />
+      {rol === 1 && (
+        <ModalConfirmacion
+          usuario={usuarioAEliminar}
+          onConfirmar={confirmarEliminacion}
+          onCancelar={() => setUsuarioAEliminar(null)}
+        />
+      )}
     </main>
   )
 }

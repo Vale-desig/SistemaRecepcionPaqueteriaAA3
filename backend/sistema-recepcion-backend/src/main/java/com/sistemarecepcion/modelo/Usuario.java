@@ -7,6 +7,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 /**
  * Entidad que representa la tabla usuarios de la base de datos.
  */
@@ -36,6 +38,10 @@ public class Usuario {
 
    @Column(name = "IdRol")
    private Integer idRol;
+
+   @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+   @Column(name = "UsuaContrasena")
+   private String usuaContrasena;
 
    public Usuario() {
    }
@@ -94,5 +100,13 @@ public class Usuario {
 
    public void setIdRol(Integer idRol) {
        this.idRol = idRol;
+   }
+
+   public String getUsuaContrasena() {
+    return usuaContrasena;
+   }
+
+   public void setUsuaContrasena(String usuaContrasena) {
+    this.usuaContrasena = usuaContrasena;
    }
 }

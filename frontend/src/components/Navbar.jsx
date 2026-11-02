@@ -1,12 +1,14 @@
-// Componente encargado de mostrar el menú lateral del sistema.
 import { useState } from "react"
 
 function Navbar({
     vista,
+    rol,
     onInicio,
     onRegistrar,
     onMostrarUsuarios,
-    onPaquetes
+    onPaquetes,
+    onEntregas,
+    onIncidentes
 }) {
     const [menuAbierto, setMenuAbierto] = useState(false)
 
@@ -18,7 +20,7 @@ function Navbar({
         <>
         <button
         type="button"
-        className={`boton-menu ${menuAbierto ? "boton-menu-abierto" : ""}`}
+        className={`boton-menu ${menuAbierto ? "boton-menu--abierto" : ""}`}
         onClick={() => setMenuAbierto(!menuAbierto)}
         >
             ☰
@@ -36,27 +38,31 @@ function Navbar({
                 🏠 Inicio
             </button>
 
-            <button
-            type="button"
-            className={vista === "registrar" ? "activo" : ""}
-            onClick={() => {
-                onRegistrar()
-                cerrarMenu()
-            }}
-            >
-                👤 Registrar usuario
-            </button>
+            {Number(rol) === 1 && (
+                <>
+                <button
+                type="button"
+                className={vista === "registrar" ? "activo" : ""}
+                onClick={() => {
+                    onRegistrar()
+                    cerrarMenu()
+                }}
+                >
+                    👤 Registrar usuario
+                </button>
 
-            <button
-            type="button"
-            className={vista === "usuarios" ? "activo" : ""}
-            onClick={() => {
-                onMostrarUsuarios()
-                cerrarMenu()
-            }}
-            >
-                👥 Usuarios registrados
-            </button>
+                <button
+                type="button"
+                className={vista === "usuarios" ? "activo" : ""}
+                onClick={() => {
+                    onMostrarUsuarios()
+                    cerrarMenu()
+                }}
+                >
+                    👥 Usuarios registrados
+                </button>
+                </>
+            )}
 
             <button
             type="button"
@@ -68,6 +74,32 @@ function Navbar({
             >
                 📦 Paquetes
             </button>
+
+            {(Number(rol) === 1 || Number(rol) === 2) && (
+                <button
+                type="button"
+                className={vista === "entregas" ? "activo" : ""}
+                onClick={() => {
+                    onEntregas()
+                    cerrarMenu()
+                }}
+                >
+                    📬 Entregas
+                </button>
+            )}
+
+            {(Number(rol) === 1 || Number(rol) === 2) && (
+                <button
+                type="button"
+                className={vista === "incidentes" ? "activo" : ""}
+                onClick={() => {
+                    onIncidentes()
+                    cerrarMenu()
+                }}
+                >
+                    ⚠️ Incidentes
+                </button>
+            )}
         </nav>
         </>
     )

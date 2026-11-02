@@ -99,6 +99,22 @@ function FormularioUsuario({
                 </select>
             </label>
 
+            {Number(usuario.idRol) !== 3 && (
+                <label>
+                    Contraseña
+                    <input
+                    type="password"
+                    name="usuaContrasena"
+                    value={usuario.usuaContrasena || ""}
+                    onChange={onCambio}
+                    placeholder="Ingrese una contraseña"
+                    minLength="8"
+                    autoComplete="new-password"
+                    required
+                    />
+                </label>
+            )}
+
             <div className="botones">
                 <button type="submit">
                     {usuarioEditando ? "Actualizar usuario" : "Guardar usuario"}

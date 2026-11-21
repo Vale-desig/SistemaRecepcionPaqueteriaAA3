@@ -1,8 +1,8 @@
-
 import { useCallback, useEffect, useState } from "react"
 
 const API_PAQUETES = "http://localhost:8080/api/paquetes"
 const API_USUARIOS = "http://localhost:8080/api/usuarios"
+const API_INCIDENTES = "http://localhost:8080/api/incidentes"
 
 const formularioInicial = {
   paquFechaLlegada: new Date().toLocaleDateString("en-CA"),
@@ -17,7 +17,9 @@ const formularioInicial = {
 function Paquetes({ sesion }) {
   const [paquetes, setPaquetes] = useState([])
   const [usuarios, setUsuarios] = useState([])
+  const [incidentes, setIncidentes] = useState([])
   const [busquedaResidente, setBusquedaResidente] = useState("")
+  const [busquedaPaquete, setBusquedaPaquete] = useState("")
   const [formulario, setFormulario] = useState(formularioInicial)
   const [paqueteEditando, setPaqueteEditando] = useState(null)
   const [mensaje, setMensaje] = useState("")
@@ -48,6 +50,24 @@ function Paquetes({ sesion }) {
       const datosPaquetes = await respuestaPaquetes.json()
       setPaquetes(datosPaquetes)
 
+      if (esResidente) {
+        const respuestaIncidentes = await fetch(
+          `${API_INCIDENTES}/mis-paquetes`,
+          {
+            headers: obtenerHeaders()
+          }
+        )
+
+        if (!respuestaIncidentes.ok) {
+          throw new Error("No se pudieron cargar los incidentes.")
+        }
+
+        const datosIncidentes = await respuestaIncidentes.json()
+        setIncidentes(datosIncidentes)
+      } else {
+        setIncidentes([])
+      }
+
       if (puedeGestionar) {
         const respuestaUsuarios = await fetch(API_USUARIOS, {
           headers: obtenerHeaders()
@@ -76,7 +96,7 @@ function Paquetes({ sesion }) {
     } finally {
       setCargando(false)
     }
-  }, [puedeGestionar])
+  }, [puedeGestionar, esResidente])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -102,11 +122,39 @@ function Paquetes({ sesion }) {
     )
   })
 
-  const paquetesVisibles = esResidente
-    ? paquetes.filter(
-        (paquete) => Number(paquete.idUsuario) === Number(sesion.idUsuario)
-      )
-    : paquetes
+  const paquetesVisibles = paquetes.filter((paquete) => {
+    const perteneceAlResidente = esResidente
+    ? Number(paquete.idUsuario) === Number(sesion.idUsuario)
+    : true
+
+    const termino = busquedaPaquete.trim().toLowerCase()
+    const residente = usuarios.find(
+      (usuario) => Number(usuario.idUsuario) === Number(paquete.idUsuario)
+    )
+
+    const coincideBusqueda = [
+      paquete.idPaquete,
+      paquete.paquFechaLlegada,
+      paquete.paquDescripcion,
+      paquete.paquRemitente,
+      paquete.paquEstado,
+      residente?.usuaNombre,
+      residente?.usuaCedula,
+      residente?.usuaApartamento
+    ].some((dato) =>
+      String(dato ?? "").toLowerCase().includes(termino)
+    )
+
+    return perteneceAlResidente && coincideBusqueda
+  })
+
+  const paquetesPendientes = paquetesVisibles.filter(
+    (paquete) => paquete.paquEstado?.toLowerCase() === "recibido"
+  )
+
+  const paquetesRecibidos = paquetesVisibles.filter(
+    (paquete) => paquete.paquEstado?.toLowerCase() === "entregado"
+  )
 
   const limpiarFormulario = () => {
     setFormulario({
@@ -222,6 +270,79 @@ function Paquetes({ sesion }) {
     return usuarios.find(
       (usuario) => Number(usuario.idUsuario) === Number(idUsuario)
     )
+  }
+
+  const obtenerIncidentes = (idPaquete) => {
+    return incidentes.filter(
+      (incidente) => Number(incidente.idPaquete) === Number(idPaquete)
+    )
+  }
+
+  const renderizarFilas = (listaPaquetes) => {
+    return listaPaquetes.map((paquete) => {
+      const residente = obtenerResidente(paquete.idUsuario)
+
+      return (
+        <tr key={paquete.idPaquete}>
+          <td>{paquete.idPaquete}</td>
+          <td>{paquete.paquFechaLlegada}</td>
+          <td>{paquete.paquDescripcion}</td>
+          <td>{paquete.paquPorteroRecepcion || "—"}</td>
+          <td>{paquete.paquTurnoRecepcion || "—"}</td>
+          <td>{paquete.paquRemitente}</td>
+          <td>
+            {residente
+            ? `${residente.usuaNombre} (${residente.usuaCedula})`
+            : Number(paquete.idUsuario) === Number(sesion.idUsuario)
+            ? sesion.nombre
+            : `Usuario ID: ${paquete.idUsuario}`}
+          </td>
+          <td>{paquete.paquEstado}</td>
+          <td>{paquete.paquPeso ?? "—"}</td>
+
+          {esResidente ? (
+            <>
+            <td>
+              {obtenerIncidentes(paquete.idPaquete).length > 0
+              ? obtenerIncidentes(paquete.idPaquete)
+              .map((incidente) => incidente.inciTipo)
+              .join(", ")
+              : "Ninguno"}
+            </td>
+            <td>
+              {obtenerIncidentes(paquete.idPaquete).length > 0
+              ? obtenerIncidentes(paquete.idPaquete)
+              .map((incidente) => incidente.inciDescripcion)
+              .join(" | ")
+              : "Sin incidentes registrados"}
+            </td>
+            </>
+          ) : (
+            <td>{paquete.paquDanio || "Ninguno"}</td>
+          )}
+
+          {puedeGestionar && (
+            <td>
+              <button
+              type="button"
+              onClick={() => editarPaquete(paquete)}
+              >
+                Editar
+              </button>
+
+              {puedeEliminar && (
+                <button
+                type="button"
+                onClick={() => eliminarPaquete(paquete)}
+                >
+                  Eliminar
+                </button>
+              )}
+            </td>
+          )}
+        </tr>
+      )
+    })
   }
 
   return (
@@ -340,7 +461,21 @@ function Paquetes({ sesion }) {
 
       <hr />
 
-      <h3>{esResidente ? "Mis paquetes registrados" : "Paquetes registrados"}</h3>
+      {esResidente ? (
+        <>
+        <h3>Mis paquetes registrados</h3>
+        <p>Aquí puedes consultar tus paquetes pendientes y recibidos.</p>
+        </>
+      ) : (
+        <h3>Paquetes registrados</h3>
+      )}
+
+      <input
+      type="text"
+      value={busquedaPaquete}
+      onChange={(evento) => setBusquedaPaquete(evento.target.value)}
+      placeholder="Buscar por número, descripción, remitente, residente o estado..."
+      />
 
       {cargando ? (
         <p>Cargando paquetes...</p>
@@ -354,58 +489,68 @@ function Paquetes({ sesion }) {
                 <th>ID</th>
                 <th>Fecha</th>
                 <th>Descripción</th>
+                <th>Portero recepción</th>
+                <th>Turno recepción</th>
                 <th>Remitente</th>
                 <th>Residente</th>
                 <th>Estado</th>
                 <th>Peso (kg)</th>
-                <th>Daños</th>
+                
+                {esResidente ? (
+                  <>
+                  <th>Tipo de incidentes</th>
+                  <th>Descripción del incidente</th>
+                  </>
+                ) : (
+                  <th>Daños</th>
+                )}
+
                 {puedeGestionar && <th>Acciones</th>}
               </tr>
             </thead>
 
             <tbody>
-              {paquetesVisibles.map((paquete) => {
-                const residente = obtenerResidente(paquete.idUsuario)
+              {esResidente || rol === 2 ? (
+                <>
+                <tr>
+                  <td colSpan={esResidente ? 11 : 11}>
+                    <strong>📦 Paquetes pendientes de entrega</strong>
+                  </td>
+                </tr>
 
-                return (
-                  <tr key={paquete.idPaquete}>
-                    <td>{paquete.idPaquete}</td>
-                    <td>{paquete.paquFechaLlegada}</td>
-                    <td>{paquete.paquDescripcion}</td>
-                    <td>{paquete.paquRemitente}</td>
-                    <td>
-                      {residente
-                        ? `${residente.usuaNombre} (${residente.usuaCedula})`
-                        : Number(paquete.idUsuario) === Number(sesion.idUsuario)
-                          ? sesion.nombre
-                          : `Usuario ID: ${paquete.idUsuario}`}
+                {paquetesPendientes.length > 0 ? (
+                  renderizarFilas(paquetesPendientes)
+                ) : (
+                  <tr>
+                    <td colSpan="11">
+                      {esResidente
+                      ? "No tienes paquetes pendientes."
+                      : "No hay paquetes pendientes de entrega."}
                     </td>
-                    <td>{paquete.paquEstado}</td>
-                    <td>{paquete.paquPeso ?? "—"}</td>
-                    <td>{paquete.paquDanio || "Ninguno"}</td>
-
-                    {puedeGestionar && (
-                      <td>
-                        <button
-                          type="button"
-                          onClick={() => editarPaquete(paquete)}
-                        >
-                          Editar
-                        </button>
-
-                        {puedeEliminar && (
-                          <button
-                          type="button"
-                          onClick={() => eliminarPaquete(paquete)}
-                          >
-                            Eliminar
-                          </button>
-                        )}
-                      </td>
-                    )}
                   </tr>
-                )
-              })}
+                )}
+
+                <tr>
+                  <td colSpan="11">
+                    <strong>✅ Paquetes entregados</strong>
+                  </td>
+                </tr>
+
+                {paquetesRecibidos.length > 0 ? (
+                  renderizarFilas(paquetesRecibidos)
+                ) : (
+                  <tr>
+                    <td colSpan="11">
+                      {esResidente
+                      ? "Todavía no tienes paquetes recibidos."
+                      : "Todavía no hay paquetes entregados."}
+                    </td>
+                  </tr>
+                )}
+                </>
+              ) : (
+                renderizarFilas(paquetesVisibles)
+              )}
             </tbody>
           </table>
         </div>

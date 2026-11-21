@@ -14,4 +14,3 @@ public interface RecuperacionContrasenaRepository
         Optional<RecuperacionContrasena> findByCedulaUsuarioAndCodigoHash(
             String cedulaUsuario, String codigoHash);
 }
-

@@ -143,7 +143,9 @@ function Entregas() {
                             <th>Paquete</th>
                             <th>Fecha</th>
                             <th>Hora</th>
-                            <th>Portero</th>
+                            <th>ID portero</th>
+                            <th>Nombre del portero</th>
+                            <th>Turno</th>
                             <th>Confirmación</th>
                         </tr>
                     </thead>
@@ -156,13 +158,15 @@ function Entregas() {
                                 <td>{entrega.entrFechaEntrega}</td>
                                 <td>{entrega.entrHoraEntrega}</td>
                                 <td>{entrega.idPortero}</td>
+                                <td>{entrega.entrPorteroNombre || "—"}</td>
+                                <td>{entrega.entrTurno || "—"}</td>
                                 <td>{entrega.entrConfirmacion}</td>
                             </tr>
                         ))}
 
                         {entregas.length === 0 && (
                             <tr>
-                                <td colSpan="6">Todavía no hay entregas registradas.</td>
+                                <td colSpan="8">Todavía no hay entregas registradas.</td>
                             </tr>
                         )}
                     </tbody>

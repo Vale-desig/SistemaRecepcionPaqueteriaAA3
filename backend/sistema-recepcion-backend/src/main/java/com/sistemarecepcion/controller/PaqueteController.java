@@ -1,4 +1,3 @@
-
 package com.sistemarecepcion.controller;
 
 import com.sistemarecepcion.modelo.Paquete;
@@ -59,9 +58,24 @@ public class PaqueteController {
     }
 
     @PostMapping
-    public Paquete guardarPaquete(@RequestBody Paquete paquete) {
-        return paqueteService.guardarPaquete(paquete);
+public ResponseEntity<?> guardarPaquete(
+        @RequestBody Paquete paquete,
+        Authentication authentication) {
+
+    try {
+        Integer idPortero = Integer.valueOf(authentication.getName());
+
+        Paquete nuevoPaquete = paqueteService.registrarRecepcion(
+                paquete, idPortero
+        );
+
+        return ResponseEntity.status(201).body(nuevoPaquete);
+
+    } catch (IllegalArgumentException | IllegalStateException e) {
+        return ResponseEntity.badRequest()
+                .body(java.util.Map.of("mensaje", e.getMessage()));
     }
+}
 
     @PutMapping("/{id}")
     public ResponseEntity<Paquete> actualizarPaquete(

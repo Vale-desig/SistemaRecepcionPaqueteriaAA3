@@ -13,6 +13,10 @@ function Incidentes({ sesion }) {
     const esAdministrador = Number(sesion.idRol) === 1
     const esPortero = Number(sesion.idRol) === 2
 
+    const paquetesDisponibles = paquetes.filter(
+        (paquete) => paquete.paquEstado?.toLowerCase() === "recibido"
+    )
+
     const formatearFechaHora = (fecha, hora) => {
         if (!fecha) return "Sin fecha"
 
@@ -211,7 +215,7 @@ function Incidentes({ sesion }) {
             >
                 <option value="">Seleccione un paquete</option>
 
-                {paquetes.map((paquete) => (
+                {paquetesDisponibles.map((paquete) => (
                     <option
                     key={paquete.idPaquete}
                     value={paquete.idPaquete}

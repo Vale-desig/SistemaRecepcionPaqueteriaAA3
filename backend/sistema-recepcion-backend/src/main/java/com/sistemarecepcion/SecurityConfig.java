@@ -1,4 +1,3 @@
-
 package com.sistemarecepcion;
 
 import org.springframework.context.annotation.Bean;
@@ -65,6 +64,10 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/api/entregas/**")
                     .hasAnyRole("ADMIN", "PORTERO")
 
+                    // El residente puede consultar los incidentes de sus propios paquetes
+                    .requestMatchers(HttpMethod.GET, "/api/incidentes/mis-paquetes")
+                    .hasRole("RESIDENTE")
+
                     // Solo el administrador puede consultar todos los incidentes
                     .requestMatchers(HttpMethod.GET, "/api/incidentes/**")
                     .hasRole("ADMIN")
@@ -73,6 +76,7 @@ public class SecurityConfig {
                     .requestMatchers(HttpMethod.POST, "/api/incidentes/**")
                     .hasRole("PORTERO")
 
+                .requestMatchers("/api/turnos/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(

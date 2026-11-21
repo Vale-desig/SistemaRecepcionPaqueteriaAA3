@@ -8,7 +8,8 @@ function Navbar({
     onMostrarUsuarios,
     onPaquetes,
     onEntregas,
-    onIncidentes
+    onIncidentes,
+    onTurnos
 }) {
     const [menuAbierto, setMenuAbierto] = useState(false)
 
@@ -61,6 +62,17 @@ function Navbar({
                 >
                     👥 Usuarios registrados
                 </button>
+
+                <button
+                type="button"
+                className={vista === "turno" ? "activo" : ""}
+                onClick={() => {
+                    onTurnos()
+                    cerrarMenu()
+                }}
+                >
+                    🕑 Configuración de turnos
+                </button>
                 </>
             )}
 
@@ -76,6 +88,7 @@ function Navbar({
             </button>
 
             {(Number(rol) === 1 || Number(rol) === 2) && (
+                <>
                 <button
                 type="button"
                 className={vista === "entregas" ? "activo" : ""}
@@ -86,9 +99,7 @@ function Navbar({
                 >
                     📬 Entregas
                 </button>
-            )}
 
-            {(Number(rol) === 1 || Number(rol) === 2) && (
                 <button
                 type="button"
                 className={vista === "incidentes" ? "activo" : ""}
@@ -99,6 +110,7 @@ function Navbar({
                 >
                     ⚠️ Incidentes
                 </button>
+                </>
             )}
         </nav>
         </>

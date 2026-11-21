@@ -1,4 +1,3 @@
-
 package com.sistemarecepcion.controller;
 
 import com.sistemarecepcion.modelo.Incidente;
@@ -48,8 +47,32 @@ public class IncidenteController {
         }
     }
 
+    // El administrador consulta todos los incidentes
     @GetMapping
     public ResponseEntity<List<Incidente>> listarTodos() {
         return ResponseEntity.ok(incidenteService.listarTodos());
     }
+
+    // El residente consulta únicamente los incidentes de sus paquetes
+    @GetMapping("/mis-paquetes")
+    public ResponseEntity<?> listarMisIncidentes(
+        Authentication authentication) {
+
+    try {
+        if (authentication == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+            .body(Map.of("mensaje", "Debe iniciar sesión."));
+        }
+
+        Integer idUsuario = Integer.parseInt(authentication.getName());
+
+        return ResponseEntity.ok(
+            incidenteService.listarPorResidente(idUsuario)
+        );
+
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest()
+        .body(Map.of("mensaje", e.getMessage()));
+    }
+  }
 }

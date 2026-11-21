@@ -27,6 +27,12 @@ public class Entrega {
 
     @Column(name = "EntrConfirmacion", nullable = false)
     private String entrConfirmacion;
+    
+    @Column(name = "EntrPorteroNombre")
+    private String entrPorteroNombre;
+    
+    @Column(name = "EntrTurno")
+    private String entrTurno;
 
     public Integer getIdEntrega() {
         return idEntrega;
@@ -74,5 +80,21 @@ public class Entrega {
 
     public void setEntrConfirmacion(String entrConfirmacion) {
         this.entrConfirmacion = entrConfirmacion;
+    }
+    
+    public String getEntrPorteroNombre(){
+        return entrPorteroNombre;
+    }
+    
+    public void setEntrPorteroNombre(String entrPorteroNombre){
+        this.entrPorteroNombre = entrPorteroNombre;
+    }
+    
+    public String getEntrTurno(){
+        return entrTurno;
+    }
+    
+    public void setEntrTurno(String entrTurno){
+        this.entrTurno = entrTurno;
     }
 }

@@ -35,6 +35,10 @@ public class UsuarioService {
         return usuarioRepository.findByUsuaCedula(cedula);
     }
 
+    public Optional<Usuario> buscarPorCorreo(String correo) {
+        return usuarioRepository.findByUsuaCorreo(correo);
+    }
+
     public boolean verificarContrasena(String contrasenaIngresada,
         String contrasenaCifrada) {
 

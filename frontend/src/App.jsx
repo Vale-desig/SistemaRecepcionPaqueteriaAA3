@@ -1,4 +1,3 @@
-
 import { useCallback, useState } from "react"
 import "./App.css"
 
@@ -12,6 +11,7 @@ import Paquetes from "./pages/Paquetes"
 import Entregas from "./pages/Entregas"
 import Login from "./pages/Login"
 import Incidentes from "./pages/Incidentes"
+import Turnos from "./Turnos"
 
 const API_URL = "http://localhost:8080/api/usuarios"
 
@@ -63,18 +63,10 @@ function App() {
   const manejarCambio = (evento) => {
     const { name, value } = evento.target
 
-    setUsuario((usuarioAnterior) => {
-      const usuarioActualizado = {
-        ...usuarioAnterior,
-        [name]: value
-      }
-
-      if (name === "idRol" && Number(value) === 3) {
-        usuarioActualizado.usuaContrasena = ""
-      }
-
-      return usuarioActualizado
-    })
+    setUsuario((usuarioAnterior) => ({
+      ...usuarioAnterior,
+      [name]: value
+    }))
   }
 
   const guardarUsuario = async (evento) => {
@@ -211,6 +203,11 @@ function App() {
     setVista("inicio")
   }
 
+  const mostrarTurnos = () => {
+    setMensaje("")
+    setVista("turnos")
+  }
+
   const cerrarSesion = () => {
     sessionStorage.removeItem("token")
     sessionStorage.removeItem("sesion")
@@ -250,6 +247,7 @@ function App() {
           onPaquetes={mostrarPaquetes}
           onEntregas={mostrarEntregas}
           onIncidentes={mostrarIncidentes}
+          onTurnos={mostrarTurnos}
         />
 
         <button type="button" onClick={cerrarSesion}>
@@ -265,6 +263,10 @@ function App() {
 
       {vista === "incidentes" && (
         <Incidentes sesion={sesion} />
+      )}
+
+      {rol === 1 && vista === "turnos" && (
+        <Turnos />
       )}
 
       {(rol === 1 || rol === 2) && vista === "entregas" && (

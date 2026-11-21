@@ -1,3 +1,5 @@
+import { useState } from "react"
+
 // Componente encargado de mostrar el formulario de usuarios.
 function FormularioUsuario({
     usuario,
@@ -6,8 +8,22 @@ function FormularioUsuario({
     onGuardar,
     onCancelar
 }) {
+    const [confirmarContrasena, setConfirmarContrasena] = useState("")
+    const [errorContrasena, setErrorContrasena] = useState("")
+
+    const manejarEnvio = (evento) => {
+        if (usuario.usuaContrasena !== confirmarContrasena) {
+            evento.preventDefault()
+            setErrorContrasena("Las contraseñas no coinciden.")
+            return
+        }
+
+        setErrorContrasena("")
+        onGuardar(evento)
+    }
+
     return (
-        <form onSubmit={onGuardar} className="formulario">
+        <form onSubmit={manejarEnvio} className="formulario">
 
             <label>
                 Nombre
@@ -99,7 +115,8 @@ function FormularioUsuario({
                 </select>
             </label>
 
-            {Number(usuario.idRol) !== 3 && (
+            {(!usuarioEditando || Number(usuario.idRol) !== 3) && (
+                <>
                 <label>
                     Contraseña
                     <input
@@ -113,6 +130,29 @@ function FormularioUsuario({
                     required
                     />
                 </label>
+
+                {usuario.usuaContrasena && (
+                    <label>
+                    Confirmar contraseña
+                    <input
+                    type="password"
+                    value={confirmarContrasena}
+                    onChange={(evento) => {
+                        setConfirmarContrasena(evento.target.value)
+                        setErrorContrasena("")
+                    }}
+                    placeholder="Repita la contraseña"
+                    minLength="8"
+                    autoComplete="new-password"
+                    required
+                    />
+                    </label>
+                )}
+
+                {errorContrasena && (
+                    <p className="mensaje">{errorContrasena}</p>
+                )}
+                </>
             )}
 
             <div className="botones">

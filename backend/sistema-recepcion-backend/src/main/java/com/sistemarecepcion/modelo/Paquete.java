@@ -9,6 +9,7 @@ import jakarta.persistence.Table;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 @Entity 
 @Table(name = "paquetes")
@@ -39,6 +40,18 @@ public class Paquete {
 
     @Column(name = "IdUsuario", nullable = false)
     private Integer idUsuario;
+    
+    @Column(name = "PaquHoraLlegada")
+    private LocalTime paquHoraLlegada;
+    
+    @Column(name = "IdPorteroRecepcion")
+    private Integer idPorteroRecepcion;
+    
+    @Column(name = "PaquPorteroRecepcion")
+    private String paquPorteroRecepcion;
+    
+    @Column(name = "PaquTurnoRecepcion")
+    private String paquTurnoRecepcion;
 
     public Paquete() {
     }
@@ -105,5 +118,37 @@ public class Paquete {
 
     public void setIdUsuario(Integer idUsuario) {
         this.idUsuario = idUsuario;
+    }
+    
+    public LocalTime getPaquHoraLlegada(){
+        return paquHoraLlegada;
+    }
+    
+    public void setPaquHoraLlegada(LocalTime paquHoraLlegada){
+        this.paquHoraLlegada = paquHoraLlegada;
+    }
+    
+    public Integer getIdPorteroRecepcion(){
+        return idPorteroRecepcion;
+    }
+    
+    public void setIdPorteroRecepcion(Integer idPorteroRecepcion){
+        this.idPorteroRecepcion = idPorteroRecepcion;
+    }
+    
+    public String getPaquPorteroRecepcion(){
+        return paquPorteroRecepcion;
+    }
+    
+    public void setPaquPorteroRecepcion(String paquPorteroRecepcion){
+        this.paquPorteroRecepcion = paquPorteroRecepcion;
+    }
+    
+    public String getPaquTurnoRecepcion(){
+        return paquTurnoRecepcion;
+    }
+    
+    public void setPaquTurnoRecepcion(String paquTurnoRecepcion){
+        this.paquTurnoRecepcion = paquTurnoRecepcion;
     }
 }

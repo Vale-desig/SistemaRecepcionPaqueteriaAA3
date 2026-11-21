@@ -2,6 +2,7 @@
 package com.sistemarecepcion.service;
 
 import com.sistemarecepcion.modelo.Incidente;
+import com.sistemarecepcion.modelo.Paquete;
 import com.sistemarecepcion.repository.IncidenteRepository;
 import com.sistemarecepcion.repository.PaqueteRepository;
 
@@ -41,10 +42,21 @@ public class IncidenteService {
             );
         }
 
-        if (incidente.getIdPaquete() == null ||
-            !paqueteRepository.existsById(incidente.getIdPaquete())) {
+        if (incidente.getIdPaquete() == null) {
             throw new RuntimeException(
-                "El paquete seleccionado no existe."
+                "Debe seleccionar un paquete."
+            );
+        }
+
+        Paquete paquete = paqueteRepository
+        .findById(incidente.getIdPaquete())
+        .orElseThrow(() -> new RuntimeException(
+            "El paquete seleccionado no existe."
+        ));
+
+        if (!"recibido".equalsIgnoreCase(paquete.getPaquEstado())) {
+            throw new RuntimeException(
+                "No se pueden registrar incidentes en paquetes que ya fueron entregados."
             );
         }
 
@@ -56,5 +68,21 @@ public class IncidenteService {
 
     public List<Incidente> listarTodos() {
         return incidenteRepository.findAll();
+    }
+
+    public List<Incidente> listarPorResidente(Integer idUsuario) {
+
+        List<Paquete> paquetes =
+        paqueteRepository.findByIdUsuario(idUsuario);
+
+        List<Integer> idsPaquetes = paquetes.stream()
+        .map(Paquete::getIdPaquete)
+        .toList();
+
+        if (idsPaquetes.isEmpty()) {
+            return List.of();
+        }
+
+        return incidenteRepository.findByIdPaqueteIn(idsPaquetes);
     }
 }
